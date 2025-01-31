@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Tic-tac-toe</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .game-container {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      padding: 2rem;
+      max-width: 28rem;
+      width: 100%;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .scores {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .score {
+      text-align: center;
+    }
+
+    .score-label {
+      font-size: 1.25rem;
+      font-weight: bold;
+    }
+
+    .score-x {
+      color: #6366f1;
+    }
+
+    .score-o {
+      color: #a855f7;
+    }
+
+    .score-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .history-btn {
+      padding: 0.5rem;
+      border-radius: 9999px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .history-btn:hover {
+      background-color: #f3f4f6;
+    }
+
+    .history-container {
+      margin-bottom: 1rem;
+      max-height: 8rem;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .history-container.show {
+      display: block;
+    }
+
+    .history-title {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    .history-moves {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .history-move {
+      padding: 0.25rem 0.75rem;
+      background-color: #f3f4f6;
+      border-radius: 9999px;
+      border: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .history-move:hover {
+      background-color: #e5e7eb;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .cell {
+      height: 6rem;
+      border-radius: 0.5rem;
+      border: none;
+      background-color: white;
+      font-size: 2rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .cell:not(:disabled):hover {
+      background-color: #f9fafb;
+    }
+
+    .cell:disabled {
+      cursor: default;
+    }
+
+    .cell.x {
+      color: #6366f1;
+      background-color: #f3f4f6;
+    }
+
+    .cell.o {
+      color: #a855f7;
+      background-color: #f3f4f6;
+    }
+
+    .status {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      min-height: 2rem;
+    }
+
+    .status.winner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .trophy {
+      color: #eab308;
+    }
+
+    .reset-btn {
+      width: 100%;
+      padding: 0.75rem;
+      background: linear-gradient(to right, #6366f1, #a855f7);
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: opacity 0.2s;
+    }
+
+    .reset-btn:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="header">
+      <div class="scores">
+        <div class="score">
+          <div class="score-label score-x">Player X</div>
+          <div class="score-value" id="score-x">0</div>
+        </div>
+        <div class="score">
+          <div class="score-label score-o">Player O</div>
+          <div class="score-value" id="score-o">0</div>
+        </div>
+      </div>
+      <button class="history-btn" id="history-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 3v5h5"/>
+          <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="history-container" id="history-container">
+      <h3 class="history-title">Game History</h3>
+      <div class="history-moves" id="history-moves"></div>
+    </div>
+
+    <div class="board" id="board">
+      <button class="cell" data-index="0"></button>
+      <button class="cell" data-index="1"></button>
+      <button class="cell" data-index="2"></button>
+      <button class="cell" data-index="3"></button>
+      <button class="cell" data-index="4"></button>
+      <button class="cell" data-index="5"></button>
+      <button class="cell" data-index="6"></button>
+      <button class="cell" data-index="7"></button>
+      <button class="cell" data-index="8"></button>
+    </div>
+
+    <div class="status" id="status">Player X's Turn</div>
+
+    <button class="reset-btn" id="reset-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+        <path d="M3 3v5h5"/>
+      </svg>
+      New Game
+    </button>
+  </div>
+
+  <script>
+    const game = {
+      board: Array(9).fill(null),
+      currentPlayer: 'X',
+      scores: { X: 0, O: 0 },
+      history: [],
+      winner: null,
+      winningCombos: [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+      ]
+    };
+
+    const elements = {
+      cells: document.querySelectorAll('.cell'),
+      status: document.getElementById('status'),
+      resetBtn: document.getElementById('reset-btn'),
+      historyBtn: document.getElementById('history-btn'),
+      historyContainer: document.getElementById('history-container'),
+      historyMoves: document.getElementById('history-moves'),
+      scoreX: document.getElementById('score-x'),
+      scoreO: document.getElementById('score-o')
+    };
+
+    function checkWinner(board) {
+      for (const combo of game.winningCombos) {
+        const [a, b, c] = combo;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          return board[a];
+        }
+      }
+      return board.every(cell => cell !== null) ? 'Draw' : null;
+    }
+
+    function updateStatus() {
+      if (game.winner === 'Draw') {
+        elements.status.innerHTML = `
+          <span class="trophy">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+              <path d="M4 22h16"/>
+              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+            </svg>
+          </span>
+          It's a Draw!
+        `;
+      } else if (game.winner) {
+        elements.status.innerHTML = `
+          <span class="trophy">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+              <path d="M4 22h16"/>
+              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+            </svg>
+          </span>
+          Player ${game.winner} Wins!
+        `;
+      } else {
+        elements.status.textContent = `Player ${game.currentPlayer}'s Turn`;
+      }
+    }
+
+    function updateBoard() {
+      elements.cells.forEach((cell, index) => {
+        cell.textContent = game.board[index];
+        cell.className = 'cell' + (game.board[index] ? ` ${game.board[index].toLowerCase()}` : '');
+        cell.disabled = !!game.board[index] || !!game.winner;
+      });
+    }
+
+    function updateScores() {
+      elements.scoreX.textContent = game.scores.X;
+      elements.scoreO.textContent = game.scores.O;
+    }
+
+    function updateHistory() {
+      elements.historyMoves.innerHTML = game.history.map((_, index) => `
+        <button class="history-move" data-move="${index}">
+          Move ${index + 1}
+        </button>
+      `).join('');
+    }
+
+    function handleMove(index) {
+      if (game.board[index] || game.winner) return;
+
+      game.board[index] = game.currentPlayer;
+      game.history.push({
+        board: [...game.board],
+        player: game.currentPlayer
+      });
+
+      const winner = checkWinner(game.board);
+      if (winner && winner !== 'Draw') {
+        game.winner = winner;
+        game.scores[winner]++;
+      } else if (winner === 'Draw') {
+        game.winner = 'Draw';
+      } else {
+        game.currentPlayer = game.currentPlayer === 'X' ? 'O' : 'X';
+      }
+
+      updateBoard();
+      updateStatus();
+      updateScores();
+      updateHistory();
+    }
+
+    function resetGame() {
+      game.board = Array(9).fill(null);
+      game.currentPlayer = 'X';
+      game.winner = null;
+      game.history = [];
+      updateBoard();
+      updateStatus();
+      updateHistory();
+    }
+
+    function jumpToMove(moveIndex) {
+      const historicalMoves = game.history.slice(0, moveIndex + 1);
+      const lastMove = historicalMoves[moveIndex];
+      game.board = [...lastMove.board];
+      game.currentPlayer = lastMove.player === 'X' ? 'O' : 'X';
+      game.winner = null;
+      game.history = historicalMoves;
+      elements.historyContainer.classList.remove('show');
+      updateBoard();
+      updateStatus();
+      updateHistory();
+    }
+
+    // Event Listeners
+    elements.cells.forEach(cell => {
+      cell.addEventListener('click', () => {
+        handleMove(parseInt(cell.dataset.index));
+      });
+    });
+
+    elements.resetBtn.addEventListener('click', resetGame);
+
+    elements.historyBtn.addEventListener('click', () => {
+      elements.historyContainer.classList.toggle('show');
+    });
+
+    elements.historyMoves.addEventListener('click', (e) => {
+      const moveBtn = e.target.closest('.history-move');
+      if (moveBtn) {
+        jumpToMove(parseInt(moveBtn.dataset.move));
+      }
+    });
+
+    // Initialize the game
+    updateBoard();
+    updateStatus();
+  </script>
+</body>
+</html>
